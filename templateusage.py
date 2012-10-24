@@ -1,3 +1,4 @@
+import os
 import sys
 
 import mock
@@ -7,6 +8,18 @@ from nose.plugins.base import Plugin
 
 
 LINE_LENGTH = 70
+
+
+def files(directory):
+    """
+    Returns a set of paths of all files located within the provided directory.
+    """
+    paths = set()
+    for dirpath, dirnames, filenames in os.walk(directory):
+        for filename in filenames:
+            path = os.path.join(dirpath, filename)
+            paths.add(os.path.relpath(path, directory))
+    return paths
 
 
 class TemplateUsageReportPlugin(Plugin):
@@ -34,8 +47,33 @@ class TemplateUsageReportPlugin(Plugin):
 
     def report(self, stream):
         print >> stream, '=' * LINE_LENGTH
-        print >> stream, 'Template Usage Report'
+        print >> stream, 'Used Templates'
         print >> stream, '-' * LINE_LENGTH
 
         for template in sorted(self.used_templates):
+            print >> stream, ' * ', template
+
+        from django.conf import settings
+        from django.template.loader import template_source_loaders
+        from django.template.loaders.filesystem import Loader as FileSystemLoader
+        from django.template.loaders.app_directories import Loader as AppDirectoryLoader
+
+        available_templates = set()
+        for loader in template_source_loaders:
+            # XXX: This should only execute once per class since you can't
+            # actually instantiate the loaders multiple times.
+            if isinstance(loader, FileSystemLoader):
+                for directory in settings.TEMPLATE_DIRS:
+                    available_templates.update(files(directory))
+
+            elif isinstance(loader, AppDirectoryLoader):
+                from django.template.loaders.app_directories import app_template_dirs
+                for directory in app_template_dirs:
+                    available_templates.update(files(directory))
+
+        self.unused_templates = available_templates - self.used_templates
+        print >> stream, '=' * LINE_LENGTH
+        print >> stream, 'Unused Templates'
+        print >> stream, '-' * LINE_LENGTH
+        for template in sorted(self.unused_templates):
             print >> stream, ' * ', template

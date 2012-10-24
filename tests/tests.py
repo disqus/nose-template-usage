@@ -36,10 +36,14 @@ class TestPluginFoo(PluginTester, unittest.TestCase):
 
     TEMPLATE_NAME = 'example.html'
 
-    def test_report(self):
-        stream = StringIO()
-        self.plugins[0].report(stream)
-        self.assertIn(self.TEMPLATE_NAME, stream.getvalue())
+    def test_basic(self):
+        self.assertIn(self.TEMPLATE_NAME, self.plugins[0].used_templates)
+
+    def test_included(self):
+        self.assertIn('included.html', self.plugins[0].used_templates)
+
+    def test_unused(self):
+        self.assertIn('unused.html', self.plugins[0].unused_templates)
 
     def makeSuite(self):
         class TestCase(unittest.TestCase):
