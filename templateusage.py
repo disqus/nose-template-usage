@@ -74,7 +74,8 @@ class TemplateUsageReportPlugin(Plugin):
                 for prefix in self.ignore_prefixes:
                     if os.path.commonprefix((prefix, path)) == prefix:
                         break
-                yield path
+                else:
+                    yield path
 
         available_templates = set()
         for loader in template_source_loaders:
