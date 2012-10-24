@@ -32,6 +32,7 @@ from templateusage import TemplateUsageReportPlugin
 
 class TestPluginFoo(PluginTester, unittest.TestCase):
     activate = '--with-template-usage-report'
+    args = ('--ignore-template-prefix=ignored/',)
     plugins = [TemplateUsageReportPlugin()]
 
     TEMPLATE_NAME = 'example.html'
@@ -44,6 +45,9 @@ class TestPluginFoo(PluginTester, unittest.TestCase):
 
     def test_unused(self):
         self.assertIn('unused.html', self.plugins[0].unused_templates)
+
+    def test_ignored(self):
+        self.assertNotIn('ignored.html', self.plugins[0].unused_templates)
 
     def makeSuite(self):
         class TestCase(unittest.TestCase):

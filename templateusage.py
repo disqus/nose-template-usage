@@ -42,8 +42,12 @@ class TemplateUsageReportPlugin(Plugin):
         parser.add_option('--with-%s' % self.name, dest='enabled', default=False,
             action='store_true', help='Enable template usage reporting.')
 
+        parser.add_option("--ignore-template-prefix", dest='ignore_prefixes',
+            action='append', help='Add a template directory to the ignore list.')
+
     def configure(self, options, conf):
         self.enabled = options.enabled
+        self.ignore_prefixes = options.ignore_prefixes
 
     def begin(self):
         self.used_templates = set()
@@ -65,18 +69,25 @@ class TemplateUsageReportPlugin(Plugin):
         from django.template.loaders.filesystem import Loader as FileSystemLoader
         from django.template.loaders.app_directories import Loader as AppDirectoryLoader
 
+        def filter_ignored(paths):
+            for path in paths:
+                for prefix in self.ignore_prefixes:
+                    if os.path.commonprefix((prefix, path)) == prefix:
+                        break
+                yield path
+
         available_templates = set()
         for loader in template_source_loaders:
             # XXX: This should only execute once per class since you can't
             # actually instantiate the loaders multiple times.
             if isinstance(loader, FileSystemLoader):
                 for directory in settings.TEMPLATE_DIRS:
-                    available_templates.update(files(directory))
+                    available_templates.update(filter_ignored(files(directory)))
 
             elif isinstance(loader, AppDirectoryLoader):
                 from django.template.loaders.app_directories import app_template_dirs
                 for directory in app_template_dirs:
-                    available_templates.update(files(directory))
+                    available_templates.update(filter_ignored(files(directory)))
 
         self.unused_templates = available_templates - self.used_templates
         heading(stream, 'Unused Templates')
