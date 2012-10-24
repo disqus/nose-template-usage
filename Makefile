@@ -1,4 +1,12 @@
-test:
+clean:
+	find . -name *.pyc -delete
+
+test: clean
 	python setup.py test
 
-.PHONY: test
+publish:
+	git tag $$(python setup.py --version)
+	git push --tags
+	python setup.py sdist upload
+
+.PHONY: publish clean test
