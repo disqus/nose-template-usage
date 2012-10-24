@@ -37,5 +37,5 @@ class TemplateUsageReportPlugin(Plugin):
         print >> stream, 'Template Usage Report'
         print >> stream, '-' * LINE_LENGTH
 
-        for template in self.used_templates:
+        for template in sorted(self.used_templates):
             print >> stream, ' * ', template
