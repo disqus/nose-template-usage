@@ -1,4 +1,5 @@
 import os
+import string
 import sys
 
 import mock
@@ -47,7 +48,13 @@ class TemplateUsageReportPlugin(Plugin):
 
     def configure(self, options, conf):
         self.enabled = options.enabled
-        self.ignore_prefixes = options.ignore_prefixes
+
+        ignore_prefixes = options.ignore_prefixes
+        # Allow for multiple values in a single argument, e.g. from `setup.cfg`.
+        if len(ignore_prefixes) == 1:
+            ignore_prefixes = map(string.strip, ignore_prefixes[0].split('\n'))
+
+        self.ignore_prefixes = ignore_prefixes
 
     def begin(self):
         self.used_templates = set()
