@@ -44,10 +44,13 @@ class TemplateUsageReportPlugin(Plugin):
             action='store_true', help='Enable template usage reporting.')
 
         parser.add_option("--ignore-template-prefix", dest='ignore_prefixes',
-            action='append', help='Add a template directory to the ignore list.')
+            action='append', help='Add a template directory to the ignore list.',
+            default=[])
 
     def configure(self, options, conf):
         self.enabled = options.enabled
+        if not self.enabled:
+            return
 
         ignore_prefixes = options.ignore_prefixes
         # Allow for multiple values in a single argument, e.g. from `setup.cfg`.
