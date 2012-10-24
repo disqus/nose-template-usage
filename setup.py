@@ -32,7 +32,7 @@ setup(
     setup_requires=setup_requires,
     entry_points={
        'nose.plugins.0.10': [
-            'tepmlate-usage-report = templateusage:TemplateUsageReportPlugin'
+            'template-usage-report = templateusage:TemplateUsageReportPlugin'
         ]
     },
     license='Apache License 2.0',
