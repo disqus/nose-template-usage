@@ -10,6 +10,17 @@ from nose.plugins.base import Plugin
 LINE_LENGTH = 70
 
 
+def heading(stream, value):
+    print >> stream, '=' * LINE_LENGTH
+    print >> stream, value
+    print >> stream, '-' * LINE_LENGTH
+
+
+def bulleted(stream, values):
+    for value in values:
+        print >> stream, ' * ', value
+
+
 def files(directory):
     """
     Returns a set of paths of all files located within the provided directory.
@@ -46,12 +57,8 @@ class TemplateUsageReportPlugin(Plugin):
         self.patch.start()
 
     def report(self, stream):
-        print >> stream, '=' * LINE_LENGTH
-        print >> stream, 'Used Templates'
-        print >> stream, '-' * LINE_LENGTH
-
-        for template in sorted(self.used_templates):
-            print >> stream, ' * ', template
+        heading(stream, 'Used Templates')
+        bulleted(stream, sorted(self.used_templates))
 
         from django.conf import settings
         from django.template.loader import template_source_loaders
@@ -72,8 +79,5 @@ class TemplateUsageReportPlugin(Plugin):
                     available_templates.update(files(directory))
 
         self.unused_templates = available_templates - self.used_templates
-        print >> stream, '=' * LINE_LENGTH
-        print >> stream, 'Unused Templates'
-        print >> stream, '-' * LINE_LENGTH
-        for template in sorted(self.unused_templates):
-            print >> stream, ' * ', template
+        heading(stream, 'Unused Templates')
+        bulleted(stream, sorted(self.unused_templates))
