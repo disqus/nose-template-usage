@@ -61,7 +61,7 @@ class TemplateUsageReportPlugin(Plugin):
         self.patch.start()
 
     def report(self, stream):
-        heading(stream, 'Used Templates')
+        heading(stream, 'Used Templates (%s)' % len(self.used_templates))
         bulleted(stream, sorted(self.used_templates))
 
         from django.conf import settings
@@ -90,5 +90,5 @@ class TemplateUsageReportPlugin(Plugin):
                     available_templates.update(filter_ignored(files(directory)))
 
         self.unused_templates = available_templates - self.used_templates
-        heading(stream, 'Unused Templates')
+        heading(stream, 'Unused Templates (%s)' % len(self.unused_templates))
         bulleted(stream, sorted(self.unused_templates))
