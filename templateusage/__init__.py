@@ -1,0 +1,1 @@
+from templateusage.plugin import TemplateUsageReportPlugin
