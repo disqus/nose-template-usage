@@ -1,3 +1,4 @@
+import json
 import os
 import string
 import sys
@@ -47,6 +48,9 @@ class TemplateUsageReportPlugin(Plugin):
             action='append', help='Add a template directory to the ignore list.',
             default=[])
 
+        parser.add_option('--template-usage-report-file', dest='outfile',
+            help='Write JSON template usage report to file.')
+
     def configure(self, options, conf):
         self.enabled = options.enabled
         if not self.enabled:
@@ -58,6 +62,7 @@ class TemplateUsageReportPlugin(Plugin):
             ignore_prefixes = map(string.strip, ignore_prefixes[0].split('\n'))
 
         self.ignore_prefixes = ignore_prefixes
+        self.outfile = options.outfile
 
     def begin(self):
         self.used_templates = set()
@@ -103,3 +108,10 @@ class TemplateUsageReportPlugin(Plugin):
         self.unused_templates = available_templates - self.used_templates
         heading(stream, 'Unused Templates (%s)' % len(self.unused_templates))
         bulleted(stream, sorted(self.unused_templates))
+
+        if self.outfile:
+            with open(self.outfile, 'w') as out:
+                json.dump({
+                    'used': list(self.used_templates),
+                    'unused': list(self.unused_templates),
+                }, out)

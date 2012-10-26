@@ -21,8 +21,10 @@ if not settings.configured:
 
 # Tests
 
-from cStringIO import StringIO
+import json
+import tempfile
 import unittest
+from cStringIO import StringIO
 
 from nose.plugins import PluginTester
 from django.template.loader import get_template
@@ -60,3 +62,27 @@ class IgnoredDirectoryUsageReportPluginTestCase(TemplateUsageReportTestMixin, un
     def test_ignored(self):
         self.assertNotIn('ignored/ignored.html', self.plugins[0].used_templates)
         self.assertNotIn('ignored/ignored.html', self.plugins[0].unused_templates)
+
+
+class ReportFileTestCase(TemplateUsageReportTestMixin, unittest.TestCase):
+    def setUp(self, *args, **kwargs):
+        f = tempfile.NamedTemporaryFile(delete=False)
+        f.close()
+        self.filename = f.name
+        self.args = ('--template-usage-report-file=%s' % self.filename,)
+        super(ReportFileTestCase, self).setUp(*args, **kwargs)
+
+    def tearDown(self):
+        os.unlink(self.filename)
+
+    def test_report_file(self):
+        self.assertIsNotNone(self.plugins[0].outfile)
+
+        with open(self.filename) as raw:
+            report = json.load(raw)
+
+            used = set(('example.html', 'included.html'))
+            self.assertEqual(used, set(report['used']))
+
+            unused = set(('unused.html', 'ignored/ignored.html'))
+            self.assertEqual(unused, set(report['unused']))
